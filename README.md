@@ -14,7 +14,7 @@
     <a href="https://x.com/SipeedIO"><img src="https://img.shields.io/badge/X_(Twitter)-SipeedIO-black?style=flat&logo=x&logoColor=white" alt="Twitter"></a>
   </p>
 
- [中文](README.zh.md) | [日本語](README.ja.md) | [Português](README.pt-br.md) | [Tiếng Việt](README.vi.md) | [Français](README.fr.md) | **English**
+ **English** - Comprehensive Guide
 </div>
 
 ---
@@ -49,9 +49,9 @@
 
 
 ## 📢 News
-2026-02-16 🎉 PicoClaw hit 12K stars in one week! Thank you all for your support! PicoClaw is growing faster than we ever imagined. Given the high volume of PRs, we urgently need community maintainers. Our volunteer roles and roadmap are officially posted [here](docs/picoclaw_community_roadmap_260216.md) —we can’t wait to have you on board!
+2026-02-16 🎉 PicoClaw hit 12K stars in one week! Thank you all for your support! PicoClaw is growing faster than we ever imagined. Given the high volume of PRs, we urgently need community maintainers. Our volunteer roles and roadmap are officially posted [here](docs/picoclaw_community_roadmap_260216.md) —we can't wait to have you on board!
 
-2026-02-13 🎉 PicoClaw hit 5000 stars in 4days! Thank you for the community! There are so many PRs&issues come in (during Chinese New Year holidays), we are finalizing the Project Roadmap and setting up the Developer Group to accelerate PicoClaw's development.  
+2026-02-13 🎉 PicoClaw hit 5000 stars in 4days! Thank you for the community! There are so many PRs&issues come in (during Chinese New Year holidays), we are finalizing the Project Roadmap and setting up the Developer Group to accelerate PicoClaw's development.
 🚀 Call to Action: Please submit your feature requests in GitHub Discussions. We will review and prioritize them during our upcoming weekly meeting.
 
 2026-02-09 🎉 PicoClaw Launched! Built in 1 day to bring AI Agents to $10 hardware with <10MB RAM. 🦐 PicoClaw，Let's Go！
@@ -68,6 +68,8 @@
 
 🤖 **AI-Bootstrapped**: Autonomous Go-native implementation — 95% Agent-generated core with human-in-the-loop refinement.
 
+🌐 **Web UI Dashboard**: Manage configuration, channels, bot identities, and test conversations through a modern web interface.
+
 |                               | OpenClaw      | NanoBot                  | **PicoClaw**                              |
 | ----------------------------- | ------------- | ------------------------ | ----------------------------------------- |
 | **Language**                  | TypeScript    | Python                   | **Go**                                    |
@@ -76,6 +78,25 @@
 | **Cost**                      | Mac Mini 599$ | Most Linux SBC </br>~50$ | **Any Linux Board**</br>**As low as 10$** |
 
 <img src="assets/compare.jpg" alt="PicoClaw" width="512">
+
+## 📑 Table of Contents
+
+- [Demonstration](#-demonstration)
+- [Quick Start](#-quick-start)
+- [Web UI Dashboard](#-web-ui-dashboard)
+- [Chat Channels](#-chat-channels)
+  - [WhatsApp](#whatsapp)
+  - [Telegram](#telegram)
+  - [Discord](#discord)
+  - [QQ](#qq)
+  - [DingTalk](#dingtalk)
+  - [LINE](#line)
+- [Bot Identity Management](#-bot-identity-management)
+- [Installation](#-installation)
+- [Docker Setup](#-docker-compose)
+- [Configuration](#️-configuration)
+- [CLI Reference](#-cli-reference)
+- [Troubleshooting](#-troubleshooting)
 
 ## 🦾 Demonstration
 
@@ -125,81 +146,23 @@ PicoClaw can be deployed on almost any Linux device!
 
 🌟 More Deployment Cases Await！
 
-## 📦 Install
-
-### Install with precompiled binary
-
-Download the firmware for your platform from the [release](https://github.com/sipeed/picoclaw/releases) page.
-
-### Install from source (latest features, recommended for development)
-
-```bash
-git clone https://github.com/sipeed/picoclaw.git
-
-cd picoclaw
-make deps
-
-# Build, no need to install
-make build
-
-# Build for multiple platforms
-make build-all
-
-# Build And Install
-make install
-```
-
-## 🐳 Docker Compose
-
-You can also run PicoClaw using Docker Compose without installing anything locally.
-
-```bash
-# 1. Clone this repo
-git clone https://github.com/sipeed/picoclaw.git
-cd picoclaw
-
-# 2. Set your API keys
-cp config/config.example.json config/config.json
-vim config/config.json      # Set DISCORD_BOT_TOKEN, API keys, etc.
-
-# 3. Build & Start
-docker compose --profile gateway up -d
-
-# 4. Check logs
-docker compose logs -f picoclaw-gateway
-
-# 5. Stop
-docker compose --profile gateway down
-```
-
-### Agent Mode (One-shot)
-
-```bash
-# Ask a question
-docker compose run --rm picoclaw-agent -m "What is 2+2?"
-
-# Interactive mode
-docker compose run --rm picoclaw-agent
-```
-
-### Rebuild
-
-```bash
-docker compose --profile gateway build --no-cache
-docker compose --profile gateway up -d
-```
-
-### 🚀 Quick Start
+## 🚀 Quick Start
 
 > [!TIP]
 > Set your API key in `~/.picoclaw/config.json`.
 > Get API keys: [OpenRouter](https://openrouter.ai/keys) (LLM) · [Zhipu](https://open.bigmodel.cn/usercenter/proj-mgmt/apikeys) (LLM)
 > Web search is **optional** - get free [Brave Search API](https://brave.com/search/api) (2000 free queries/month) or use built-in auto fallback.
 
-**1. Initialize**
+### Option 1: Quick Binary Setup (Fastest)
+
+**1. Download & Initialize**
 
 ```bash
-picoclaw onboard
+# Download for your platform from https://github.com/sipeed/picoclaw/releases
+# Or use wget:
+wget https://github.com/sipeed/picoclaw/releases/latest/download/picoclaw-linux-amd64
+chmod +x picoclaw-linux-amd64
+./picoclaw-linux-amd64 onboard
 ```
 
 **2. Configure** (`~/.picoclaw/config.json`)
@@ -208,69 +171,171 @@ picoclaw onboard
 {
   "agents": {
     "defaults": {
-      "workspace": "~/.picoclaw/workspace",
-      "model": "glm-4.7",
+      "model": "anthropic/claude-sonnet-4.5",
+      "provider": "openrouter",
       "max_tokens": 8192,
-      "temperature": 0.7,
-      "max_tool_iterations": 20
+      "temperature": 0.7
     }
   },
   "providers": {
     "openrouter": {
-      "api_key": "xxx",
-      "api_base": "https://openrouter.ai/api/v1"
-    }
-  },
-  "tools": {
-    "web": {
-      "brave": {
-        "enabled": false,
-        "api_key": "YOUR_BRAVE_API_KEY",
-        "max_results": 5
-      },
-      "duckduckgo": {
-        "enabled": true,
-        "max_results": 5
-      }
+      "api_key": "YOUR_OPENROUTER_API_KEY"
     }
   }
 }
 ```
 
-**3. Get API Keys**
-
-* **LLM Provider**: [OpenRouter](https://openrouter.ai/keys) · [Zhipu](https://open.bigmodel.cn/usercenter/proj-mgmt/apikeys) · [Anthropic](https://console.anthropic.com) · [OpenAI](https://platform.openai.com) · [Gemini](https://aistudio.google.com/api-keys)
-* **Web Search** (optional): [Brave Search](https://brave.com/search/api) - Free tier available (2000 requests/month)
-
-> **Note**: See `config.example.json` for a complete configuration template.
-
-**4. Chat**
+**3. Start Chatting**
 
 ```bash
-picoclaw agent -m "What is 2+2?"
+# Interactive mode
+./picoclaw-linux-amd64 agent
+
+# One-shot question
+./picoclaw-linux-amd64 agent -m "What is 2+2?"
 ```
 
-That's it! You have a working AI assistant in 2 minutes.
+**4. Enable Channels** (Optional)
 
----
+```bash
+# Start gateway for Telegram, WhatsApp, Discord, etc.
+./picoclaw-linux-amd64 gateway
+```
 
-## 💬 Chat Apps
+### Option 2: Docker Compose (Recommended for Production)
 
-Talk to your picoclaw through Telegram, Discord, DingTalk, or LINE
+**1. Clone & Configure**
 
-| Channel      | Setup                              |
-| ------------ | ---------------------------------- |
-| **WhatsApp** | Easy (QR code scan)                |
-| **Telegram** | Easy (just a token)                |
-| **Discord**  | Easy (bot token + intents)         |
-| **QQ**       | Easy (AppID + AppSecret)           |
-| **DingTalk** | Medium (app credentials)           |
-| **LINE**     | Medium (credentials + webhook URL) |
+```bash
+git clone https://github.com/sipeed/picoclaw.git
+cd picoclaw
 
-<details>
-<summary><b>WhatsApp</b></summary>
+# Copy and edit config
+cp config/config.example.json config/config.json
+nano config/config.json  # Add your API keys
+```
 
-**1. Configure** (`config/config.json`)
+**2. Start Services**
+
+```bash
+# Gateway only (for chat channels)
+docker compose --profile gateway up -d
+
+# Gateway + Web UI (full dashboard)
+COMPOSE_PROFILES=webui docker compose up -d
+```
+
+**3. Access Web UI**
+
+Open your browser: **http://localhost:8080**
+
+- Configure channels
+- Manage bot identities
+- Test conversations
+- View live logs
+
+**4. Check Logs**
+
+```bash
+# Gateway logs
+docker compose logs -f picoclaw-gateway
+
+# Web UI logs
+docker compose logs -f picoclaw-webui
+```
+
+### Option 3: Build from Source (For Development)
+
+```bash
+git clone https://github.com/sipeed/picoclaw.git
+cd picoclaw
+
+# Install dependencies
+make deps
+
+# Build
+make build
+
+# Or install to $GOPATH/bin
+make install
+
+# Run
+picoclaw onboard
+picoclaw agent
+```
+
+## 🌐 Web UI Dashboard
+
+PicoClaw includes a powerful, lightweight web interface for managing your AI assistant.
+
+### Features
+
+- **📊 Dashboard** - Real-time system status, active channels, and metrics
+- **💬 Test Chat** - Interactive chat interface to test bot identities
+- **🎭 Bot Identity Manager** - Create and switch between multiple bot personalities
+- **🔌 Channel Configuration** - Enable/disable WhatsApp, Telegram, Discord, Slack, Feishu
+- **🎨 Skills Manager** - Install and manage custom skills
+- **⚙️ Settings** - Configure LLM providers, models, and parameters
+- **📝 Live Logs** - Real-time log streaming with filtering
+
+### Starting the Web UI
+
+**Standalone Mode:**
+
+```bash
+picoclaw webui
+
+# Custom port
+picoclaw webui --port 3000
+```
+
+**With Docker Compose:**
+
+```bash
+# Start both gateway and Web UI
+COMPOSE_PROFILES=webui docker compose up -d
+
+# Access at http://localhost:8080
+```
+
+### WhatsApp QR Code in Web UI
+
+When WhatsApp is enabled, the Web UI provides an easy way to scan the QR code:
+
+1. Navigate to **Channels** page
+2. Toggle **WhatsApp** ON
+3. Click **Show QR Code**
+4. Scan with WhatsApp app: **Settings → Linked Devices → Link a Device**
+
+The QR code automatically refreshes and shows connection status.
+
+## 💬 Chat Channels
+
+Connect PicoClaw to your favorite messaging platforms.
+
+| Channel      | Setup Difficulty | Features                            |
+| ------------ | ---------------- | ----------------------------------- |
+| **WhatsApp** | Easy             | QR code scan, Web UI support        |
+| **Telegram** | Easy             | Bot token, rich media support       |
+| **Discord**  | Easy             | Bot token, server integration       |
+| **QQ**       | Easy             | AppID + AppSecret                   |
+| **DingTalk** | Medium           | Enterprise messaging                |
+| **LINE**     | Medium           | Webhook setup required              |
+
+### WhatsApp
+
+**Method 1: Web UI (Easiest)**
+
+1. Start Web UI: `COMPOSE_PROFILES=webui docker compose up -d`
+2. Open http://localhost:8080/channels
+3. Toggle WhatsApp ON
+4. Click "Show QR Code"
+5. Scan with WhatsApp: **Settings → Linked Devices → Link a Device**
+6. Send a test message!
+
+**Method 2: Terminal**
+
+1. Enable in `config/config.json`:
 
 ```json
 {
@@ -283,15 +348,13 @@ Talk to your picoclaw through Telegram, Discord, DingTalk, or LINE
 }
 ```
 
-**2. Run**
+2. Start gateway:
 
 ```bash
 picoclaw gateway
 ```
 
-**3. Scan QR Code**
-
-When you start the gateway, you'll see a QR code in the logs:
+3. Scan QR code from terminal logs:
 
 ```
 [whatsapp] Scan the QR code below with WhatsApp:
@@ -302,27 +365,17 @@ When you start the gateway, you'll see a QR code in the logs:
 ...
 ```
 
-* Open WhatsApp on your phone
-* Go to **Settings** → **Linked Devices**
-* Tap **Link a Device**
-* Scan the QR code from your terminal
-
-**4. Test it**
-
-Send a WhatsApp message to your phone number and PicoClaw will respond!
+4. Test by sending a message to your WhatsApp number
 
 > Session data is stored in `~/.picoclaw/workspace/whatsapp.db`. Once paired, you won't need to scan the QR code again.
 
-</details>
-
-<details>
-<summary><b>Telegram</b> (Recommended)</summary>
+### Telegram
 
 **1. Create a bot**
 
-* Open Telegram, search `@BotFather`
-* Send `/newbot`, follow prompts
-* Copy the token
+- Open Telegram, search `@BotFather`
+- Send `/newbot`, follow prompts
+- Copy the token
 
 **2. Configure**
 
@@ -346,26 +399,23 @@ Send a WhatsApp message to your phone number and PicoClaw will respond!
 picoclaw gateway
 ```
 
-</details>
-
-<details>
-<summary><b>Discord</b></summary>
+### Discord
 
 **1. Create a bot**
 
-* Go to <https://discord.com/developers/applications>
-* Create an application → Bot → Add Bot
-* Copy the bot token
+- Go to <https://discord.com/developers/applications>
+- Create an application → Bot → Add Bot
+- Copy the bot token
 
 **2. Enable intents**
 
-* In the Bot settings, enable **MESSAGE CONTENT INTENT**
-* (Optional) Enable **SERVER MEMBERS INTENT** if you plan to use allow lists based on member data
+- In the Bot settings, enable **MESSAGE CONTENT INTENT**
+- (Optional) Enable **SERVER MEMBERS INTENT** if you plan to use allow lists based on member data
 
 **3. Get your User ID**
 
-* Discord Settings → Advanced → enable **Developer Mode**
-* Right-click your avatar → **Copy User ID**
+- Discord Settings → Advanced → enable **Developer Mode**
+- Right-click your avatar → **Copy User ID**
 
 **4. Configure**
 
@@ -383,10 +433,10 @@ picoclaw gateway
 
 **5. Invite the bot**
 
-* OAuth2 → URL Generator
-* Scopes: `bot`
-* Bot Permissions: `Send Messages`, `Read Message History`
-* Open the generated invite URL and add the bot to your server
+- OAuth2 → URL Generator
+- Scopes: `bot`
+- Bot Permissions: `Send Messages`, `Read Message History`
+- Open the generated invite URL and add the bot to your server
 
 **6. Run**
 
@@ -394,10 +444,7 @@ picoclaw gateway
 picoclaw gateway
 ```
 
-</details>
-
-<details>
-<summary><b>QQ</b></summary>
+### QQ
 
 **1. Create a bot**
 
@@ -427,10 +474,7 @@ picoclaw gateway
 picoclaw gateway
 ```
 
-</details>
-
-<details>
-<summary><b>DingTalk</b></summary>
+### DingTalk
 
 **1. Create a bot**
 
@@ -453,18 +497,13 @@ picoclaw gateway
 }
 ```
 
-> Set `allow_from` to empty to allow all users, or specify QQ numbers to restrict access.
-
 **3. Run**
 
 ```bash
 picoclaw gateway
 ```
 
-</details>
-
-<details>
-<summary><b>LINE</b></summary>
+### LINE
 
 **1. Create a LINE Official Account**
 
@@ -511,13 +550,220 @@ picoclaw gateway
 
 > **Docker Compose**: Add `ports: ["18791:18791"]` to the `picoclaw-gateway` service to expose the webhook port.
 
-</details>
+## 🎭 Bot Identity Management
 
-## <img src="assets/clawdchat-icon.png" width="24" height="24" alt="ClawdChat"> Join the Agent Social Network
+**NEW!** Create multiple bot personalities and switch between them instantly. Perfect for different use cases:
 
-Connect Picoclaw to the Agent Social Network simply by sending a single message via the CLI or any integrated Chat App.
+- **Car Sales Assistant** - Automotive sales specialist
+- **Tech Support** - Patient technical helper
+- **Receptionist** - Professional front desk assistant
+- **Fashion Advisor** - Personal stylist
+- **Product Sales** - General sales expert
+- **Personal Assistant** - Versatile AI helper
 
-**Read `https://clawdchat.ai/skill.md` and follow the instructions to join [ClawdChat.ai](https://clawdchat.ai)**
+### How It Works
+
+Each bot identity consists of 4 configuration files:
+
+- **AGENT.md** - Behavioral instructions and guidelines
+- **IDENTITY.md** - Purpose, capabilities, and identity
+- **SOUL.md** - Personality, tone, and communication style
+- **USER.md** - Target audience and customer context
+
+### Using the Web UI
+
+**1. Access Bot Identities**
+
+Open http://localhost:8080/identities
+
+**2. Browse Templates**
+
+- Click **Browse Templates**
+- Choose from 6 pre-built business templates
+- Click **Use Template** to load it
+
+**3. Create Custom Identity**
+
+- Click **Create New Identity**
+- Fill in:
+  - Name and description
+  - Icon (emoji)
+  - Category (sales, support, personal)
+  - Agent instructions
+  - Identity details
+  - Personality traits
+  - User/audience context
+- Click **Save Identity**
+
+**4. Activate Identity**
+
+- Click **Activate** on any identity
+- The new personality applies to **all active channels** immediately
+- No restart required!
+
+**5. Test Identity**
+
+- Navigate to http://localhost:8080/chat
+- Start chatting to test the active bot identity
+- Switch identities and see the personality change in real-time
+
+### Example: Car Sales Bot
+
+**AGENT.md:**
+```markdown
+# Agent Instructions
+
+You are an automotive sales specialist. Your role is to help customers find the perfect vehicle.
+
+## Guidelines
+- Ask about customer's needs: budget, usage, preferences
+- Provide detailed vehicle information and comparisons
+- Be honest about vehicle condition and history
+- Schedule test drives when appropriate
+```
+
+**IDENTITY.md:**
+```markdown
+# Identity
+
+## Name
+AutoPro Sales Assistant 🚗
+
+## Purpose
+- Help customers find the right vehicle
+- Provide accurate information
+- Guide through buying process
+```
+
+**SOUL.md:**
+```markdown
+# Soul
+
+You're passionate about helping people find the right vehicle. You're enthusiastic about automobiles without being pushy.
+```
+
+**USER.md:**
+```markdown
+# User
+
+## Target Audience
+Car buyers and automotive shoppers
+
+## Preferences
+- Communication style: Professional but friendly
+- Approach: Consultative sales, not pushy
+```
+
+### Managing Identities via Files
+
+Identities are stored in `~/.picoclaw/workspace/identities/` as JSON files.
+
+**Create Manually:**
+
+```bash
+cd ~/.picoclaw/workspace/identities
+
+# Create custom identity
+cat > my-bot.json <<EOF
+{
+  "id": "my-bot",
+  "name": "My Custom Bot",
+  "description": "Custom bot for specific tasks",
+  "icon": "🤖",
+  "category": "custom",
+  "agent_md": "# Agent Instructions\n...",
+  "identity_md": "# Identity\n...",
+  "soul_md": "# Soul\n...",
+  "user_md": "# User\n..."
+}
+EOF
+```
+
+**Activate:**
+
+```bash
+# Via Web UI or by making it active in the JSON file
+```
+
+### Identity Applies to All Channels
+
+When you activate an identity, it immediately applies to:
+
+- WhatsApp conversations
+- Telegram chats
+- Discord messages
+- QQ messages
+- All other enabled channels
+
+The bot adopts the new personality for all new messages across all platforms!
+
+## 📦 Installation
+
+### Install with precompiled binary
+
+Download the firmware for your platform from the [release](https://github.com/sipeed/picoclaw/releases) page.
+
+### Install from source (latest features, recommended for development)
+
+```bash
+git clone https://github.com/sipeed/picoclaw.git
+
+cd picoclaw
+make deps
+
+# Build, no need to install
+make build
+
+# Build for multiple platforms
+make build-all
+
+# Build And Install
+make install
+```
+
+## 🐳 Docker Compose
+
+You can also run PicoClaw using Docker Compose without installing anything locally.
+
+```bash
+# 1. Clone this repo
+git clone https://github.com/sipeed/picoclaw.git
+cd picoclaw
+
+# 2. Set your API keys
+cp config/config.example.json config/config.json
+vim config/config.json      # Set API keys, channel tokens, etc.
+
+# 3. Build & Start (Gateway only)
+docker compose --profile gateway up -d
+
+# 4. Build & Start (Gateway + Web UI)
+COMPOSE_PROFILES=webui docker compose up -d
+
+# 5. Check logs
+docker compose logs -f picoclaw-gateway
+docker compose logs -f picoclaw-webui
+
+# 6. Stop
+docker compose down
+```
+
+### Agent Mode (One-shot)
+
+```bash
+# Ask a question
+docker compose run --rm picoclaw-agent -m "What is 2+2?"
+
+# Interactive mode
+docker compose run --rm picoclaw-agent
+```
+
+### Rebuild
+
+```bash
+docker compose build --no-cache
+docker compose --profile gateway up -d
+```
 
 ## ⚙️ Configuration
 
@@ -534,12 +780,13 @@ PicoClaw stores data in your configured workspace (default: `~/.picoclaw/workspa
 ├── state/            # Persistent state (last channel, etc.)
 ├── cron/             # Scheduled jobs database
 ├── skills/           # Custom skills
-├── AGENTS.md         # Agent behavior guide
+├── identities/       # Bot identity configurations
+├── AGENT.md          # Active bot behavior guide
 ├── HEARTBEAT.md      # Periodic task prompts (checked every 30 min)
-├── IDENTITY.md       # Agent identity
-├── SOUL.md           # Agent soul
+├── IDENTITY.md       # Active bot identity
+├── SOUL.md           # Active bot personality
 ├── TOOLS.md          # Tool descriptions
-└── USER.md           # User preferences
+└── USER.md           # Active audience/user context
 ```
 
 ### 🔒 Security Sandbox
@@ -588,18 +835,6 @@ Even with `restrict_to_workspace: false`, the `exec` tool blocks these dangerous
 * `shutdown`, `reboot`, `poweroff` — System shutdown
 * Fork bomb `:(){ :|:& };:`
 
-#### Error Examples
-
-```
-[ERROR] tool: Tool execution failed
-{tool=exec, error=Command blocked by safety guard (path outside working dir)}
-```
-
-```
-[ERROR] tool: Tool execution failed
-{tool=exec, error=Command blocked by safety guard (dangerous pattern detected)}
-```
-
 #### Disabling Restrictions (Security Risk)
 
 If you need the agent to access paths outside the workspace:
@@ -624,18 +859,6 @@ export PICOCLAW_AGENTS_DEFAULTS_RESTRICT_TO_WORKSPACE=false
 
 > ⚠️ **Warning**: Disabling this restriction allows the agent to access any path on your system. Use with caution in controlled environments only.
 
-#### Security Boundary Consistency
-
-The `restrict_to_workspace` setting applies consistently across all execution paths:
-
-| Execution Path | Security Boundary |
-|----------------|-------------------|
-| Main Agent | `restrict_to_workspace` ✅ |
-| Subagent / Spawn | Inherits same restriction ✅ |
-| Heartbeat tasks | Inherits same restriction ✅ |
-
-All paths share the same workspace restriction — there's no way to bypass the security boundary through subagents or scheduled tasks.
-
 ### Heartbeat (Periodic Tasks)
 
 PicoClaw can perform periodic tasks automatically. Create a `HEARTBEAT.md` file in your workspace:
@@ -650,48 +873,6 @@ PicoClaw can perform periodic tasks automatically. Create a `HEARTBEAT.md` file 
 
 The agent will read this file every 30 minutes (configurable) and execute any tasks using available tools.
 
-#### Async Tasks with Spawn
-
-For long-running tasks (web search, API calls), use the `spawn` tool to create a **subagent**:
-
-```markdown
-# Periodic Tasks
-
-## Quick Tasks (respond directly)
-- Report current time
-
-## Long Tasks (use spawn for async)
-- Search the web for AI news and summarize
-- Check email and report important messages
-```
-
-**Key behaviors:**
-
-| Feature | Description |
-|---------|-------------|
-| **spawn** | Creates async subagent, doesn't block heartbeat |
-| **Independent context** | Subagent has its own context, no session history |
-| **message tool** | Subagent communicates with user directly via message tool |
-| **Non-blocking** | After spawning, heartbeat continues to next task |
-
-#### How Subagent Communication Works
-
-```
-Heartbeat triggers
-    ↓
-Agent reads HEARTBEAT.md
-    ↓
-For long task: spawn subagent
-    ↓                           ↓
-Continue to next task      Subagent works independently
-    ↓                           ↓
-All tasks done            Subagent uses "message" tool
-    ↓                           ↓
-Respond HEARTBEAT_OK      User receives result directly
-```
-
-The subagent has access to tools (message, web_search, etc.) and can communicate with the user independently without going through the main agent.
-
 **Configuration:**
 
 ```json
@@ -702,16 +883,6 @@ The subagent has access to tools (message, web_search, etc.) and can communicate
   }
 }
 ```
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `enabled` | `true` | Enable/disable heartbeat |
-| `interval` | `30` | Check interval in minutes (min: 5) |
-
-**Environment variables:**
-
-* `PICOCLAW_HEARTBEAT_ENABLED=false` to disable
-* `PICOCLAW_HEARTBEAT_INTERVAL=60` to change interval
 
 ### Providers
 
@@ -728,146 +899,24 @@ The subagent has access to tools (message, web_search, etc.) and can communicate
 | `deepseek(To be tested)`   | LLM (DeepSeek direct)                   | [platform.deepseek.com](https://platform.deepseek.com) |
 | `groq`                     | LLM + **Voice transcription** (Whisper) | [console.groq.com](https://console.groq.com)           |
 
-### Provider Architecture
-
-PicoClaw routes providers by protocol family:
-
-- OpenAI-compatible protocol: OpenRouter, OpenAI-compatible gateways, Groq, Zhipu, and vLLM-style endpoints.
-- Anthropic protocol: Claude-native API behavior.
-- Codex/OAuth path: OpenAI OAuth/token authentication route.
-
-This keeps the runtime lightweight while making new OpenAI-compatible backends mostly a config operation (`api_base` + `api_key`).
-
-<details>
-<summary><b>Zhipu</b></summary>
-
-**1. Get API key and base URL**
-
-* Get [API key](https://bigmodel.cn/usercenter/proj-mgmt/apikeys)
-
-**2. Configure**
-
-```json
-{
-  "agents": {
-    "defaults": {
-      "workspace": "~/.picoclaw/workspace",
-      "model": "glm-4.7",
-      "max_tokens": 8192,
-      "temperature": 0.7,
-      "max_tool_iterations": 20
-    }
-  },
-  "providers": {
-    "zhipu": {
-      "api_key": "Your API Key",
-      "api_base": "https://open.bigmodel.cn/api/paas/v4"
-    }
-  }
-}
-```
-
-**3. Run**
-
-```bash
-picoclaw agent -m "Hello"
-```
-
-</details>
-
-<details>
-<summary><b>Full config example</b></summary>
-
-```json
-{
-  "agents": {
-    "defaults": {
-      "model": "anthropic/claude-opus-4-5"
-    }
-  },
-  "providers": {
-    "openrouter": {
-      "api_key": "sk-or-v1-xxx"
-    },
-    "groq": {
-      "api_key": "gsk_xxx"
-    }
-  },
-  "channels": {
-    "telegram": {
-      "enabled": true,
-      "token": "123456:ABC...",
-      "allow_from": ["123456789"]
-    },
-    "discord": {
-      "enabled": true,
-      "token": "",
-      "allow_from": [""]
-    },
-    "whatsapp": {
-      "enabled": false
-    },
-    "feishu": {
-      "enabled": false,
-      "app_id": "cli_xxx",
-      "app_secret": "xxx",
-      "encrypt_key": "",
-      "verification_token": "",
-      "allow_from": []
-    },
-    "qq": {
-      "enabled": false,
-      "app_id": "",
-      "app_secret": "",
-      "allow_from": []
-    }
-  },
-  "tools": {
-    "web": {
-      "brave": {
-        "enabled": false,
-        "api_key": "BSA...",
-        "max_results": 5
-      },
-      "duckduckgo": {
-        "enabled": true,
-        "max_results": 5
-      }
-    },
-    "cron": {
-      "exec_timeout_minutes": 5
-    }
-  },
-  "heartbeat": {
-    "enabled": true,
-    "interval": 30
-  }
-}
-```
-
-</details>
-
-## CLI Reference
+## 📚 CLI Reference
 
 | Command                   | Description                   |
 | ------------------------- | ----------------------------- |
 | `picoclaw onboard`        | Initialize config & workspace |
 | `picoclaw agent -m "..."` | Chat with the agent           |
 | `picoclaw agent`          | Interactive chat mode         |
-| `picoclaw gateway`        | Start the gateway             |
+| `picoclaw gateway`        | Start the gateway (channels)  |
+| `picoclaw webui`          | Start Web UI dashboard        |
 | `picoclaw status`         | Show status                   |
 | `picoclaw cron list`      | List all scheduled jobs       |
 | `picoclaw cron add ...`   | Add a scheduled job           |
 
-### Scheduled Tasks / Reminders
+## <img src="assets/clawdchat-icon.png" width="24" height="24" alt="ClawdChat"> Join the Agent Social Network
 
-PicoClaw supports scheduled reminders and recurring tasks through the `cron` tool:
+Connect Picoclaw to the Agent Social Network simply by sending a single message via the CLI or any integrated Chat App.
 
-* **One-time reminders**: "Remind me in 10 minutes" → triggers once after 10min
-* **Recurring tasks**: "Remind me every 2 hours" → triggers every 2 hours
-* **Cron expressions**: "Remind me at 9am daily" → uses cron expression
-
-Jobs are stored in `~/.picoclaw/workspace/cron/` and processed automatically.
+**Read `https://clawdchat.ai/skill.md` and follow the instructions to join [ClawdChat.ai](https://clawdchat.ai)**
 
 ## 🤝 Contribute & Roadmap
 
@@ -901,7 +950,7 @@ Add the key to `~/.picoclaw/config.json` if using Brave:
   "tools": {
     "web": {
       "brave": {
-        "enabled": false,
+        "enabled": true,
         "api_key": "YOUR_BRAVE_API_KEY",
         "max_results": 5
       },
@@ -922,6 +971,28 @@ Some providers (like Zhipu) have content filtering. Try rephrasing your query or
 
 This happens when another instance of the bot is running. Make sure only one `picoclaw gateway` is running at a time.
 
+### WhatsApp QR code not showing in Web UI
+
+Make sure:
+1. Gateway is running: `docker compose ps`
+2. WhatsApp is enabled in config
+3. Check gateway logs: `docker compose logs picoclaw-gateway`
+
+### Web UI not accessible
+
+Check that the webui container is running:
+
+```bash
+docker compose ps
+docker compose logs picoclaw-webui
+```
+
+Make sure you started with the webui profile:
+
+```bash
+COMPOSE_PROFILES=webui docker compose up -d
+```
+
 ---
 
 ## 📝 API Key Comparison
@@ -932,3 +1003,12 @@ This happens when another instance of the bot is running. Make sure only one `pi
 | **Zhipu**        | 200K tokens/month   | Best for Chinese users                |
 | **Brave Search** | 2000 queries/month  | Web search functionality              |
 | **Groq**         | Free tier available | Fast inference (Llama, Mixtral)       |
+
+---
+
+<div align="center">
+  <p>Built with 🦐 by the PicoClaw Team</p>
+  <p>
+    <a href="https://github.com/sipeed/picoclaw/blob/main/LICENSE">MIT License</a>
+  </p>
+</div>
