@@ -1,0 +1,54 @@
+{{define "logs-content"}}
+<div class="header">
+    <h1>📝 Live Logs</h1>
+    <button class="btn btn-primary" onclick="clearLogs()">Clear</button>
+</div>
+
+<div class="card">
+    <div style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 13px; max-height: 600px; overflow-y: auto;" id="log-container">
+        {{range .LogEntries}}
+        <div style="margin-bottom: 5px;">
+            <span style="color: #95a5a6;">[{{.Timestamp.Format "15:04:05"}}]</span>
+            <span style="color: #3498db;">[{{.Level}}]</span>
+            <span style="color: #e67e22;">[{{.Component}}]</span>
+            <span>{{.Message}}</span>
+        </div>
+        {{else}}
+        <p style="color: #95a5a6;">No logs available. Logs will appear here in real-time.</p>
+        {{end}}
+    </div>
+</div>
+
+<script>
+    const logContainer = document.getElementById('log-container');
+
+    // Connect to Server-Sent Events for real-time logs
+    const eventSource = new EventSource('/api/logs/stream');
+
+    eventSource.onmessage = function(event) {
+        const log = JSON.parse(event.data);
+        const timestamp = new Date(log.timestamp).toLocaleTimeString();
+
+        const logEntry = document.createElement('div');
+        logEntry.style.marginBottom = '5px';
+        logEntry.innerHTML = `
+            <span style="color: #95a5a6;">[${timestamp}]</span>
+            <span style="color: #3498db;">[${log.level}]</span>
+            <span style="color: #e67e22;">[${log.component}]</span>
+            <span>${log.message}</span>
+        `;
+
+        logContainer.appendChild(logEntry);
+        logContainer.scrollTop = logContainer.scrollHeight;
+
+        // Keep max 500 log entries
+        while (logContainer.children.length > 500) {
+            logContainer.removeChild(logContainer.firstChild);
+        }
+    };
+
+    function clearLogs() {
+        logContainer.innerHTML = '<p style="color: #95a5a6;">Logs cleared. New logs will appear here.</p>';
+    }
+</script>
+{{end}}

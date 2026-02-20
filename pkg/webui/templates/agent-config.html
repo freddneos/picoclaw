@@ -1,0 +1,214 @@
+{{define "agent-config-content"}}
+<div class="header">
+    <h1>🤖 Agent Configuration</h1>
+    <p style="color: #7f8c8d; margin-top: 5px;">Customize your AI assistant's behavior, personality, and knowledge</p>
+</div>
+
+<div class="card">
+    <div style="background: #e8f4f8; border-left: 4px solid #3498db; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+        <strong>💡 Tip:</strong> These files define how your AI assistant behaves. Edit them to create business assistants (sales, receptionist, support), personal assistants, or specialized bots.
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ecf0f1;">
+        <button class="tab-btn active" onclick="switchTab('agent')" id="tab-agent">
+            📝 Agent Instructions
+        </button>
+        <button class="tab-btn" onclick="switchTab('identity')" id="tab-identity">
+            🆔 Identity
+        </button>
+        <button class="tab-btn" onclick="switchTab('soul')" id="tab-soul">
+            ✨ Personality
+        </button>
+        <button class="tab-btn" onclick="switchTab('user')" id="tab-user">
+            👤 User Info
+        </button>
+    </div>
+
+    <!-- Agent Tab -->
+    <div id="content-agent" class="tab-content active">
+        <h3>Agent Instructions (AGENT.md)</h3>
+        <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 15px;">
+            Define your agent's behavior, guidelines, and how it should respond to users.
+        </p>
+        <textarea id="editor-agent" style="width: 100%; height: 400px; font-family: 'Courier New', monospace; padding: 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"></textarea>
+        <div style="margin-top: 15px; display: flex; gap: 10px;">
+            <button class="btn btn-primary" onclick="saveFile('agent')">💾 Save Changes</button>
+            <button class="btn btn-secondary" onclick="resetFile('agent')">🔄 Reset</button>
+            <button class="btn btn-secondary" onclick="loadTemplate('agent', 'sales')">📋 Load Template: Sales</button>
+            <button class="btn btn-secondary" onclick="loadTemplate('agent', 'receptionist')">📋 Load Template: Receptionist</button>
+        </div>
+    </div>
+
+    <!-- Identity Tab -->
+    <div id="content-identity" class="tab-content" style="display: none;">
+        <h3>Identity (IDENTITY.md)</h3>
+        <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 15px;">
+            Define who your agent is, its purpose, and capabilities.
+        </p>
+        <textarea id="editor-identity" style="width: 100%; height: 400px; font-family: 'Courier New', monospace; padding: 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"></textarea>
+        <div style="margin-top: 15px; display: flex; gap: 10px;">
+            <button class="btn btn-primary" onclick="saveFile('identity')">💾 Save Changes</button>
+            <button class="btn btn-secondary" onclick="resetFile('identity')">🔄 Reset</button>
+        </div>
+    </div>
+
+    <!-- Soul Tab -->
+    <div id="content-soul" class="tab-content" style="display: none;">
+        <h3>Personality (SOUL.md)</h3>
+        <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 15px;">
+            Define your agent's personality, communication style, and tone.
+        </p>
+        <textarea id="editor-soul" style="width: 100%; height: 400px; font-family: 'Courier New', monospace; padding: 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"></textarea>
+        <div style="margin-top: 15px; display: flex; gap: 10px;">
+            <button class="btn btn-primary" onclick="saveFile('soul')">💾 Save Changes</button>
+            <button class="btn btn-secondary" onclick="resetFile('soul')">🔄 Reset</button>
+        </div>
+    </div>
+
+    <!-- User Tab -->
+    <div id="content-user" class="tab-content" style="display: none;">
+        <h3>User Information (USER.md)</h3>
+        <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 15px;">
+            Information about you and your preferences (optional but helps personalize responses).
+        </p>
+        <textarea id="editor-user" style="width: 100%; height: 400px; font-family: 'Courier New', monospace; padding: 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"></textarea>
+        <div style="margin-top: 15px; display: flex; gap: 10px;">
+            <button class="btn btn-primary" onclick="saveFile('user')">💾 Save Changes</button>
+            <button class="btn btn-secondary" onclick="resetFile('user')">🔄 Reset</button>
+        </div>
+    </div>
+</div>
+
+<!-- Templates Card -->
+<div class="card">
+    <h2>📚 Pre-built Templates</h2>
+    <p style="color: #7f8c8d; margin-bottom: 15px;">Quick-start templates for common business use cases</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+        <div style="border: 1px solid #ecf0f1; padding: 15px; border-radius: 4px;">
+            <h4>🚗 Car Sales Assistant</h4>
+            <p style="font-size: 13px; color: #7f8c8d; margin: 10px 0;">Help customers find vehicles, schedule test drives, discuss financing.</p>
+            <button class="btn btn-primary" onclick="loadTemplate('agent', 'car-sales')" style="width: 100%;">Use Template</button>
+        </div>
+
+        <div style="border: 1px solid #ecf0f1; padding: 15px; border-radius: 4px;">
+            <h4>👔 Receptionist</h4>
+            <p style="font-size: 13px; color: #7f8c8d; margin: 10px 0;">Schedule appointments, answer FAQs, direct customers.</p>
+            <button class="btn btn-primary" onclick="loadTemplate('agent', 'receptionist')" style="width: 100%;">Use Template</button>
+        </div>
+
+        <div style="border: 1px solid #ecf0f1; padding: 15px; border-radius: 4px;">
+            <h4>👗 Fashion Sales</h4>
+            <p style="font-size: 13px; color: #7f8c8d; margin: 10px 0;">Personal shopping, style advice, outfit recommendations.</p>
+            <button class="btn btn-primary" onclick="loadTemplate('agent', 'fashion')" style="width: 100%;">Use Template</button>
+        </div>
+
+        <div style="border: 1px solid #ecf0f1; padding: 15px; border-radius: 4px;">
+            <h4>🛍️ Product Sales</h4>
+            <p style="font-size: 13px; color: #7f8c8d; margin: 10px 0;">General product sales, order processing, customer support.</p>
+            <button class="btn btn-primary" onclick="loadTemplate('agent', 'product-sales')" style="width: 100%;">Use Template</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tab-btn {
+        background: none;
+        border: none;
+        padding: 12px 20px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #7f8c8d;
+        border-bottom: 2px solid transparent;
+        transition: all 0.3s;
+    }
+
+    .tab-btn:hover {
+        color: #2c3e50;
+        background: #f8f9fa;
+    }
+
+    .tab-btn.active {
+        color: #3498db;
+        border-bottom-color: #3498db;
+    }
+
+    .tab-content {
+        animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+
+<script>
+    let originalContent = {};
+
+    // Load files on page load
+    window.addEventListener('DOMContentLoaded', async () => {
+        await loadFile('agent');
+        await loadFile('identity');
+        await loadFile('soul');
+        await loadFile('user');
+    });
+
+    function switchTab(tab) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+        // Show selected tab
+        document.getElementById('content-' + tab).style.display = 'block';
+        document.getElementById('tab-' + tab).classList.add('active');
+    }
+
+    async function loadFile(type) {
+        try {
+            const result = await apiCall(`/api/agent/file?type=${type}`);
+            const editor = document.getElementById('editor-' + type);
+            editor.value = result.content || '';
+            originalContent[type] = result.content || '';
+        } catch (error) {
+            showToast('Failed to load ' + type + ' file', 'error');
+        }
+    }
+
+    async function saveFile(type) {
+        const editor = document.getElementById('editor-' + type);
+        const content = editor.value;
+
+        try {
+            await apiCall('/api/agent/file', {
+                type: type,
+                content: content
+            });
+            originalContent[type] = content;
+            showToast('✅ Saved successfully! Changes will take effect immediately.', 'success');
+        } catch (error) {
+            showToast('Failed to save: ' + error.message, 'error');
+        }
+    }
+
+    function resetFile(type) {
+        if (confirm('Reset to last saved version?')) {
+            document.getElementById('editor-' + type).value = originalContent[type];
+        }
+    }
+
+    async function loadTemplate(type, template) {
+        if (!confirm('Load ' + template + ' template? This will replace current content.')) {
+            return;
+        }
+
+        try {
+            const result = await apiCall(`/api/agent/template?template=${template}`);
+            document.getElementById('editor-' + type).value = result.content || '';
+            showToast('Template loaded! Remember to save your changes.', 'success');
+        } catch (error) {
+            showToast('Failed to load template: ' + error.message, 'error');
+        }
+    }
+</script>
+{{end}}

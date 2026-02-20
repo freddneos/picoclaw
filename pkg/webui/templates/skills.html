@@ -1,0 +1,77 @@
+{{define "skills-content"}}
+<div class="header">
+    <h1>🎨 Skills Management</h1>
+</div>
+
+<div class="card">
+    <h2>Install New Skill</h2>
+    <div style="display: flex; gap: 10px;">
+        <input type="text"
+               id="skill-repo"
+               placeholder="sipeed/picoclaw-skills/weather"
+               style="flex: 1;">
+        <button class="btn btn-success" onclick="installSkill()">Install from GitHub</button>
+    </div>
+    <p style="font-size: 12px; color: #7f8c8d; margin-top: 10px;">
+        Example: sipeed/picoclaw-skills/weather
+    </p>
+</div>
+
+<div class="card">
+    <h2>Installed Skills</h2>
+    {{if .Skills}}
+    <div style="display: grid; gap: 15px;">
+        {{range .Skills}}
+        <div style="border: 1px solid #ecf0f1; padding: 15px; border-radius: 4px;">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div style="flex: 1;">
+                    <h3 style="margin-bottom: 5px;">{{.Name}}</h3>
+                    <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 5px;">{{.Description}}</p>
+                    <p style="font-size: 12px; color: #95a5a6;">Source: {{.Source}}</p>
+                </div>
+                <button class="btn btn-danger" onclick="removeSkill('{{.Name}}')">Remove</button>
+            </div>
+        </div>
+        {{end}}
+    </div>
+    {{else}}
+    <p style="color: #95a5a6; text-align: center; padding: 20px;">No skills installed</p>
+    {{end}}
+</div>
+
+<script>
+    async function installSkill() {
+        const repo = document.getElementById('skill-repo').value.trim();
+        if (!repo) {
+            showToast('Please enter a repository', 'error');
+            return;
+        }
+
+        showToast('Installing skill...', 'success');
+
+        const result = await apiCall('/api/skills/install', {
+            repository: repo
+        });
+
+        if (result.status === 'ok') {
+            showToast('Skill installed successfully');
+            setTimeout(() => location.reload(), 1000);
+        }
+    }
+
+    async function removeSkill(name) {
+        if (!confirm(`Remove skill "${name}"?`)) {
+            return;
+        }
+
+        const result = await apiCall('/api/skills/remove', {
+            name: name
+        });
+
+        if (result.status === 'ok') {
+            showToast('Skill removed');
+            setTimeout(() => location.reload(), 1000);
+        }
+    }
+</script>
+{{end}}

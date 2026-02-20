@@ -260,11 +260,60 @@ Talk to your picoclaw through Telegram, Discord, DingTalk, or LINE
 
 | Channel      | Setup                              |
 | ------------ | ---------------------------------- |
+| **WhatsApp** | Easy (QR code scan)                |
 | **Telegram** | Easy (just a token)                |
 | **Discord**  | Easy (bot token + intents)         |
 | **QQ**       | Easy (AppID + AppSecret)           |
 | **DingTalk** | Medium (app credentials)           |
 | **LINE**     | Medium (credentials + webhook URL) |
+
+<details>
+<summary><b>WhatsApp</b></summary>
+
+**1. Configure** (`config/config.json`)
+
+```json
+{
+  "channels": {
+    "whatsapp": {
+      "enabled": true,
+      "allow_from": []
+    }
+  }
+}
+```
+
+**2. Run**
+
+```bash
+picoclaw gateway
+```
+
+**3. Scan QR Code**
+
+When you start the gateway, you'll see a QR code in the logs:
+
+```
+[whatsapp] Scan the QR code below with WhatsApp:
+[whatsapp] Open WhatsApp → Settings → Linked Devices → Link a Device
+[whatsapp] QR Code:
+█████████████████████████████
+█ ▄▄▄▄▄ █ ▄ ██▄▀█ ▄▄▄▄▄ ██
+...
+```
+
+* Open WhatsApp on your phone
+* Go to **Settings** → **Linked Devices**
+* Tap **Link a Device**
+* Scan the QR code from your terminal
+
+**4. Test it**
+
+Send a WhatsApp message to your phone number and PicoClaw will respond!
+
+> Session data is stored in `~/.picoclaw/workspace/whatsapp.db`. Once paired, you won't need to scan the QR code again.
+
+</details>
 
 <details>
 <summary><b>Telegram</b> (Recommended)</summary>

@@ -3,7 +3,7 @@
 # ============================================================
 FROM golang:1.26.0-alpine AS builder
 
-RUN apk add --no-cache git make
+RUN apk add --no-cache git make gcc musl-dev sqlite-dev
 
 WORKDIR /src
 
@@ -13,6 +13,8 @@ RUN go mod download
 
 # Copy source and build
 COPY . .
+RUN go mod tidy
+ENV CGO_ENABLED=1
 RUN make build
 
 # ============================================================

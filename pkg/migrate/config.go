@@ -155,9 +155,6 @@ func ConvertConfig(data map[string]interface{}) (*config.Config, []string, error
 			case "whatsapp":
 				cfg.Channels.WhatsApp.Enabled = enabled
 				cfg.Channels.WhatsApp.AllowFrom = allowFrom
-				if v, ok := getString(cMap, "bridge_url"); ok {
-					cfg.Channels.WhatsApp.BridgeURL = v
-				}
 			case "feishu":
 				cfg.Channels.Feishu.Enabled = enabled
 				cfg.Channels.Feishu.AllowFrom = allowFrom

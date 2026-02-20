@@ -1,0 +1,473 @@
+{{define "identities-content"}}
+<div class="header">
+    <h1>🎭 Bot Identities</h1>
+    <p style="color: #7f8c8d; margin-top: 5px;">Create and manage multiple bot personalities for different purposes</p>
+    <p style="color: #3498db; margin-top: 10px; font-size: 14px;">
+        💡 <strong>Note:</strong> When you activate an identity, it automatically applies to <strong>all active channels</strong> (Telegram, WhatsApp, Discord, etc.). The new personality takes effect immediately for all new messages.
+    </p>
+</div>
+
+<!-- Active Identity Banner -->
+<div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="color: white; border: none; padding: 0; margin: 0;">Currently Active</h2>
+            <h3 style="color: white; margin: 10px 0 5px 0;" id="active-identity-name">Default Assistant</h3>
+            <p style="opacity: 0.9; margin: 0;" id="active-identity-desc">General purpose AI assistant</p>
+        </div>
+        <div>
+            <button class="btn" style="background: white; color: #667eea;" onclick="showIdentitySelector()">
+                🔄 Switch Identity
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div style="display: flex; gap: 15px; margin-bottom: 20px;">
+    <button class="btn btn-primary" onclick="showCreateIdentity()">
+        ➕ Create New Identity
+    </button>
+    <button class="btn btn-secondary" onclick="showTemplates()">
+        📚 Browse Templates
+    </button>
+    <button class="btn btn-secondary" onclick="showImportExport()">
+        📤 Import/Export
+    </button>
+</div>
+
+<!-- Identities Grid -->
+<div id="identities-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+    <!-- Identities will be loaded here -->
+</div>
+
+<!-- Create/Edit Identity Modal -->
+<div id="identity-modal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 800px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 id="modal-title">Create New Identity</h2>
+            <button onclick="closeModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+
+        <div class="form-group">
+            <label>Identity Name *</label>
+            <input type="text" id="identity-name" placeholder="e.g., Car Sales Bot">
+        </div>
+
+        <div class="form-group">
+            <label>Short Description *</label>
+            <input type="text" id="identity-description" placeholder="e.g., Helps customers find and purchase vehicles">
+        </div>
+
+        <div class="form-group">
+            <label>Icon (Emoji)</label>
+            <input type="text" id="identity-icon" placeholder="🚗" maxlength="2">
+        </div>
+
+        <div class="form-group">
+            <label>Category</label>
+            <select id="identity-category">
+                <option value="sales">Sales & Marketing</option>
+                <option value="support">Customer Support</option>
+                <option value="personal">Personal Assistant</option>
+                <option value="technical">Technical Support</option>
+                <option value="creative">Creative & Content</option>
+                <option value="custom">Custom</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Agent Instructions (Behavior) *</label>
+            <textarea id="identity-agent" rows="10" placeholder="Define how this bot should behave, its goals, and guidelines..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Identity Details</label>
+            <textarea id="identity-identity" rows="6" placeholder="Define the bot's purpose, capabilities, and what it represents..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Personality (Soul)</label>
+            <textarea id="identity-soul" rows="6" placeholder="Define communication style, tone, and personality traits..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>User/Audience Context</label>
+            <textarea id="identity-user" rows="6" placeholder="Define target audience, preferences, and customer context..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="identity-active">
+                Set as active identity immediately
+            </label>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn btn-primary" onclick="saveIdentity()">💾 Save Identity</button>
+            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Templates Modal -->
+<div id="templates-modal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 900px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>📚 Identity Templates</h2>
+            <button onclick="closeTemplatesModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+
+        <div id="templates-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+            <!-- Templates will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Channel Assignment Modal -->
+<div id="channel-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h2>🔌 Assign to Channels</h2>
+        <p style="color: #7f8c8d; margin-bottom: 20px;">Choose which channels should use this identity</p>
+
+        <div id="channel-list">
+            <!-- Channels will be loaded here -->
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button class="btn btn-primary" onclick="saveChannelAssignments()">Save Assignments</button>
+            <button class="btn btn-secondary" onclick="closeChannelModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        max-height: 90vh;
+        overflow-y: auto;
+        width: 90%;
+    }
+
+    .identity-card {
+        border: 2px solid #ecf0f1;
+        border-radius: 8px;
+        padding: 20px;
+        transition: all 0.3s;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .identity-card:hover {
+        border-color: #3498db;
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .identity-card.active {
+        border-color: #27ae60;
+        background: #f0fff4;
+    }
+
+    .identity-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #27ae60;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: bold;
+    }
+
+    .template-card {
+        border: 1px solid #ecf0f1;
+        border-radius: 8px;
+        padding: 15px;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .template-card:hover {
+        border-color: #3498db;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+</style>
+
+<script>
+    let identities = [];
+    let currentEditId = null;
+    let templates = [];
+
+    window.addEventListener('DOMContentLoaded', () => {
+        loadIdentities();
+        loadTemplates();
+    });
+
+    async function loadIdentities() {
+        try {
+            const result = await apiCall('/api/identities/list');
+            identities = result.identities || [];
+            renderIdentities();
+
+            // Update active identity banner
+            const active = identities.find(i => i.active);
+            if (active) {
+                document.getElementById('active-identity-name').textContent = active.name;
+                document.getElementById('active-identity-desc').textContent = active.description;
+            }
+        } catch (error) {
+            showToast('Failed to load identities: ' + error.message, 'error');
+        }
+    }
+
+    function renderIdentities() {
+        const grid = document.getElementById('identities-grid');
+
+        if (identities.length === 0) {
+            grid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #95a5a6;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">🎭</div>
+                    <h3>No identities yet</h3>
+                    <p>Create your first bot identity to get started</p>
+                    <button class="btn btn-primary" onclick="showCreateIdentity()" style="margin-top: 20px;">Create Identity</button>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = identities.map(identity => `
+            <div class="identity-card ${identity.active ? 'active' : ''}" onclick="selectIdentity('${identity.id}')">
+                ${identity.active ? '<div class="identity-badge">ACTIVE</div>' : ''}
+                <div style="font-size: 32px; margin-bottom: 10px;">${identity.icon || '🤖'}</div>
+                <h3 style="margin: 10px 0 5px 0;">${identity.name}</h3>
+                <p style="color: #7f8c8d; font-size: 13px; margin-bottom: 15px;">${identity.description}</p>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">
+                    <span style="background: #ecf0f1; padding: 4px 10px; border-radius: 12px; font-size: 11px;">
+                        ${identity.category || 'general'}
+                    </span>
+                    ${identity.channels ? identity.channels.map(ch => `
+                        <span style="background: #e8f4f8; color: #3498db; padding: 4px 10px; border-radius: 12px; font-size: 11px;">
+                            ${ch}
+                        </span>
+                    `).join('') : ''}
+                </div>
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn btn-primary" style="flex: 1; padding: 8px; font-size: 12px;" onclick="event.stopPropagation(); activateIdentity('${identity.id}')">
+                        ${identity.active ? '✓ Active' : 'Activate'}
+                    </button>
+                    <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px;" onclick="event.stopPropagation(); editIdentity('${identity.id}')">
+                        ✏️
+                    </button>
+                    <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px;" onclick="event.stopPropagation(); assignChannels('${identity.id}')">
+                        🔌
+                    </button>
+                    <button class="btn btn-danger" style="padding: 8px 12px; font-size: 12px;" onclick="event.stopPropagation(); deleteIdentity('${identity.id}')">
+                        🗑️
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function showCreateIdentity() {
+        currentEditId = null;
+        document.getElementById('modal-title').textContent = 'Create New Identity';
+        document.getElementById('identity-name').value = '';
+        document.getElementById('identity-description').value = '';
+        document.getElementById('identity-icon').value = '';
+        document.getElementById('identity-category').value = 'sales';
+        document.getElementById('identity-agent').value = '';
+        document.getElementById('identity-identity').value = '';
+        document.getElementById('identity-soul').value = '';
+        document.getElementById('identity-user').value = '';
+        document.getElementById('identity-active').checked = false;
+        document.getElementById('identity-modal').style.display = 'flex';
+    }
+
+    async function editIdentity(id) {
+        currentEditId = id;
+        const identity = identities.find(i => i.id === id);
+        if (!identity) return;
+
+        document.getElementById('modal-title').textContent = 'Edit Identity';
+        document.getElementById('identity-name').value = identity.name;
+        document.getElementById('identity-description').value = identity.description;
+        document.getElementById('identity-icon').value = identity.icon || '';
+        document.getElementById('identity-category').value = identity.category || 'custom';
+        document.getElementById('identity-agent').value = identity.agent_md || '';
+        document.getElementById('identity-identity').value = identity.identity_md || '';
+        document.getElementById('identity-soul').value = identity.soul_md || '';
+        document.getElementById('identity-user').value = identity.user_md || '';
+        document.getElementById('identity-active').checked = identity.active || false;
+        document.getElementById('identity-modal').style.display = 'flex';
+    }
+
+    async function saveIdentity() {
+        const data = {
+            id: currentEditId,
+            name: document.getElementById('identity-name').value,
+            description: document.getElementById('identity-description').value,
+            icon: document.getElementById('identity-icon').value,
+            category: document.getElementById('identity-category').value,
+            agent_md: document.getElementById('identity-agent').value,
+            identity_md: document.getElementById('identity-identity').value,
+            soul_md: document.getElementById('identity-soul').value,
+            user_md: document.getElementById('identity-user').value,
+            active: document.getElementById('identity-active').checked
+        };
+
+        if (!data.name || !data.description || !data.agent) {
+            showToast('Please fill in all required fields', 'error');
+            return;
+        }
+
+        try {
+            await apiCall('/api/identities/save', data);
+            showToast('✅ Identity saved successfully!', 'success');
+            closeModal();
+            await loadIdentities();
+        } catch (error) {
+            showToast('Failed to save: ' + error.message, 'error');
+        }
+    }
+
+    async function activateIdentity(id) {
+        try {
+            await apiCall('/api/identities/activate', { id });
+            showToast('✅ Identity activated!', 'success');
+            await loadIdentities();
+        } catch (error) {
+            showToast('Failed to activate: ' + error.message, 'error');
+        }
+    }
+
+    async function deleteIdentity(id) {
+        if (!confirm('Delete this identity? This cannot be undone.')) return;
+
+        try {
+            await apiCall('/api/identities/delete', { id });
+            showToast('✅ Identity deleted', 'success');
+            await loadIdentities();
+        } catch (error) {
+            showToast('Failed to delete: ' + error.message, 'error');
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('identity-modal').style.display = 'none';
+    }
+
+    async function loadTemplates() {
+        templates = [
+            {
+                id: 'car-sales',
+                name: 'Car Sales Assistant',
+                icon: '🚗',
+                category: 'sales',
+                description: 'Help customers find vehicles, schedule test drives, discuss financing'
+            },
+            {
+                id: 'receptionist',
+                name: 'Receptionist',
+                icon: '👔',
+                category: 'support',
+                description: 'Schedule appointments, answer FAQs, direct customers'
+            },
+            {
+                id: 'fashion-sales',
+                name: 'Fashion Sales',
+                icon: '👗',
+                category: 'sales',
+                description: 'Personal shopping, style advice, outfit recommendations'
+            },
+            {
+                id: 'product-sales',
+                name: 'Product Sales',
+                icon: '🛍️',
+                category: 'sales',
+                description: 'General product sales, order processing, customer support'
+            },
+            {
+                id: 'tech-support',
+                name: 'Tech Support',
+                icon: '🔧',
+                category: 'technical',
+                description: 'Technical troubleshooting and customer support'
+            },
+            {
+                id: 'personal-assistant',
+                name: 'Personal Assistant',
+                icon: '📱',
+                category: 'personal',
+                description: 'Schedule management, reminders, general assistance'
+            }
+        ];
+    }
+
+    function showTemplates() {
+        const grid = document.getElementById('templates-grid');
+        grid.innerHTML = templates.map(t => `
+            <div class="template-card" onclick="useTemplate('${t.id}')">
+                <div style="font-size: 32px; margin-bottom: 10px;">${t.icon}</div>
+                <h4>${t.name}</h4>
+                <p style="font-size: 13px; color: #7f8c8d; margin: 10px 0;">${t.description}</p>
+                <button class="btn btn-primary" style="width: 100%; padding: 8px; font-size: 12px;">Use Template</button>
+            </div>
+        `).join('');
+        document.getElementById('templates-modal').style.display = 'flex';
+    }
+
+    async function useTemplate(templateId) {
+        try {
+            const result = await apiCall(`/api/identities/template?name=${templateId}`);
+            const template = result.template;
+            document.getElementById('identity-name').value = template.name;
+            document.getElementById('identity-description').value = template.description;
+            document.getElementById('identity-icon').value = template.icon;
+            document.getElementById('identity-category').value = template.category;
+            document.getElementById('identity-agent').value = template.agent_md;
+            document.getElementById('identity-identity').value = template.identity_md;
+            document.getElementById('identity-soul').value = template.soul_md;
+            document.getElementById('identity-user').value = template.user_md;
+            closeTemplatesModal();
+            document.getElementById('identity-modal').style.display = 'flex';
+        } catch (error) {
+            showToast('Failed to load template: ' + error.message, 'error');
+        }
+    }
+
+    function closeTemplatesModal() {
+        document.getElementById('templates-modal').style.display = 'none';
+    }
+
+    function assignChannels(id) {
+        // TODO: Implement channel assignment
+        showToast('Channel assignment coming soon!', 'success');
+    }
+
+    function showImportExport() {
+        showToast('Import/Export coming soon!', 'success');
+    }
+
+    function selectIdentity(id) {
+        // Show details or activate
+    }
+</script>
+{{end}}

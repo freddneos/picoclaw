@@ -166,7 +166,6 @@ type ChannelsConfig struct {
 
 type WhatsAppConfig struct {
 	Enabled   bool                `json:"enabled" env:"PICOCLAW_CHANNELS_WHATSAPP_ENABLED"`
-	BridgeURL string              `json:"bridge_url" env:"PICOCLAW_CHANNELS_WHATSAPP_BRIDGE_URL"`
 	AllowFrom FlexibleStringSlice `json:"allow_from" env:"PICOCLAW_CHANNELS_WHATSAPP_ALLOW_FROM"`
 }
 
@@ -336,7 +335,6 @@ func DefaultConfig() *Config {
 		Channels: ChannelsConfig{
 			WhatsApp: WhatsAppConfig{
 				Enabled:   false,
-				BridgeURL: "ws://localhost:3001",
 				AllowFrom: FlexibleStringSlice{},
 			},
 			Telegram: TelegramConfig{

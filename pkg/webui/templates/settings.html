@@ -1,0 +1,150 @@
+{{define "settings-content"}}
+<div class="header">
+    <h1>⚙️ LLM Settings</h1>
+</div>
+
+<div class="card">
+    <h2>Agent Configuration</h2>
+    <div class="form-group">
+        <label>Default Model</label>
+        <select id="model-select" onchange="updateModel(this.value)">
+            <option value="anthropic/claude-3.5-sonnet" {{if eq .Agents.Defaults.Model "anthropic/claude-3.5-sonnet"}}selected{{end}}>Anthropic - Claude 3.5 Sonnet</option>
+            <option value="anthropic/claude-3-opus" {{if eq .Agents.Defaults.Model "anthropic/claude-3-opus"}}selected{{end}}>Anthropic - Claude 3 Opus</option>
+            <option value="openai/gpt-4-turbo" {{if eq .Agents.Defaults.Model "openai/gpt-4-turbo"}}selected{{end}}>OpenAI - GPT-4 Turbo</option>
+            <option value="openai/gpt-4" {{if eq .Agents.Defaults.Model "openai/gpt-4"}}selected{{end}}>OpenAI - GPT-4</option>
+            <option value="google/gemini-pro" {{if eq .Agents.Defaults.Model "google/gemini-pro"}}selected{{end}}>Google - Gemini Pro</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Max Tokens</label>
+        <input type="number" value="{{.Agents.Defaults.MaxTokens}}" onchange="updateMaxTokens(this.value)">
+    </div>
+
+    <div class="form-group">
+        <label>Temperature (0.0 - 1.0)</label>
+        <input type="number" step="0.1" min="0" max="1" value="{{.Agents.Defaults.Temperature}}" onchange="updateTemperature(this.value)">
+    </div>
+
+    <div class="form-group">
+        <label>Max Tool Iterations</label>
+        <input type="number" value="{{.Agents.Defaults.MaxToolIterations}}" onchange="updateMaxToolIterations(this.value)">
+    </div>
+
+    <div class="form-group">
+        <label>Workspace Path</label>
+        <input type="text" value="{{.Agents.Defaults.Workspace}}" readonly>
+        <p style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+            Agent workspace directory (read-only)
+        </p>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input type="checkbox" {{if .Agents.Defaults.RestrictToWorkspace}}checked{{end}} onchange="updateRestrictWorkspace(this.checked)">
+            Restrict agent to workspace directory
+        </label>
+    </div>
+</div>
+
+<div class="card">
+    <h2>API Keys</h2>
+
+    <div class="form-group">
+        <label>OpenRouter API Key</label>
+        <input type="password"
+               value="{{.Providers.OpenRouter.APIKey}}"
+               placeholder="sk-or-v1-..."
+               onchange="updateAPIKey('openrouter', this.value)">
+        <p style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+            Get your key at <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a>
+        </p>
+    </div>
+
+    <div class="form-group">
+        <label>Anthropic API Key</label>
+        <input type="password"
+               value="{{.Providers.Anthropic.APIKey}}"
+               placeholder="sk-ant-..."
+               onchange="updateAPIKey('anthropic', this.value)">
+    </div>
+
+    <div class="form-group">
+        <label>OpenAI API Key</label>
+        <input type="password"
+               value="{{.Providers.OpenAI.APIKey}}"
+               placeholder="sk-..."
+               onchange="updateAPIKey('openai', this.value)">
+    </div>
+
+    <div class="form-group">
+        <label>Groq API Key (for voice transcription)</label>
+        <input type="password"
+               value="{{.Providers.Groq.APIKey}}"
+               placeholder="gsk_..."
+               onchange="updateAPIKey('groq', this.value)">
+    </div>
+
+    <div class="form-group">
+        <label>Gemini API Key</label>
+        <input type="password"
+               value="{{.Providers.Gemini.APIKey}}"
+               placeholder="..."
+               onchange="updateAPIKey('gemini', this.value)">
+    </div>
+</div>
+
+<div class="card">
+    <h2>Tools Configuration</h2>
+
+    <div class="form-group">
+        <label>Brave Search API Key</label>
+        <input type="password"
+               value="{{.Tools.Web.Brave.APIKey}}"
+               placeholder="BSA..."
+               onchange="updateBraveAPIKey(this.value)">
+        <label style="margin-top: 10px;">
+            <input type="checkbox" {{if .Tools.Web.Brave.Enabled}}checked{{end}} onchange="toggleBraveSearch(this.checked)">
+            Enable Brave Search
+        </label>
+    </div>
+
+    <div class="form-group">
+        <label>Cron Execution Timeout (minutes)</label>
+        <input type="number" value="{{.Tools.Cron.ExecTimeoutMinutes}}" onchange="updateCronTimeout(this.value)">
+    </div>
+</div>
+
+<div style="margin-top: 20px; text-align: right;">
+    <button class="btn btn-primary" onclick="saveAllSettings()">💾 Save All Settings</button>
+</div>
+
+<script>
+    let configCache = {};
+
+    async function loadConfig() {
+        const config = await apiCall('/api/config');
+        configCache = config;
+    }
+
+    async function saveAllSettings() {
+        const result = await apiCall('/api/config/save', configCache);
+        if (result.status === 'ok') {
+            showToast('Settings saved successfully. Please restart the gateway.');
+        }
+    }
+
+    async function updateModel(value) {
+        configCache.agents.defaults.model = value;
+        showToast('Model updated (not saved yet)');
+    }
+
+    async function updateAPIKey(provider, value) {
+        showToast(`${provider} API key will be updated on save`);
+        // Would update configCache here
+    }
+
+    // Initialize
+    loadConfig();
+</script>
+{{end}}

@@ -19,7 +19,7 @@ services:
 
   # ─────────────────────────────────────────────
   # PicoClaw Gateway (Long-running Bot)
-  #   docker compose up picoclaw-gateway
+  #   Runs automatically with 'docker compose up'
   # ─────────────────────────────────────────────
   picoclaw-gateway:
     build:
@@ -27,14 +27,39 @@ services:
       dockerfile: Dockerfile
     container_name: picoclaw-gateway
     restart: unless-stopped
-    profiles:
-      - gateway
     volumes:
-      # Configuration file
-      - ./config/config.json:/home/picoclaw/.picoclaw/config.json:ro
+      # Configuration file (shared with webui)
+      - ./config/config.json:/home/picoclaw/.picoclaw/config.json
       # Persistent workspace (sessions, memory, logs)
       - picoclaw-workspace:/home/picoclaw/.picoclaw/workspace
     command: ["gateway"]
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "picoclaw"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ─────────────────────────────────────────────
+  # PicoClaw Web UI (Configuration + Chat Interface)
+  #   Accessible at http://localhost:8080
+  # ─────────────────────────────────────────────
+  picoclaw-webui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: picoclaw-webui
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      # Configuration file (read-write for editing)
+      - ./config/config.json:/home/picoclaw/.picoclaw/config.json
+      # Persistent workspace (shared with gateway)
+      - picoclaw-workspace:/home/picoclaw/.picoclaw/workspace
+    command: ["webui", "--host", "0.0.0.0", "--port", "8080"]
+    depends_on:
+      picoclaw-gateway:
+        condition: service_healthy
 
 volumes:
   picoclaw-workspace:

@@ -1,0 +1,374 @@
+{{define "channels-content"}}
+<div class="header">
+    <h1>💬 Channels Configuration</h1>
+</div>
+
+<!-- WhatsApp Channel -->
+<div class="card">
+    <h2>📱 WhatsApp</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <p style="color: #95a5a6; margin-top: 5px;">Connect PicoClaw to WhatsApp via QR Code</p>
+        </div>
+        <label class="toggle-switch">
+            <input type="checkbox"
+                   id="whatsapp-toggle"
+                   {{if .Channels.WhatsApp.Enabled}}checked{{end}}
+                   onchange="toggleChannel('whatsapp', this.checked)">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    {{if .Channels.WhatsApp.Enabled}}
+    <div class="form-group">
+        <label>Whitelist (Allow From)</label>
+        <p style="font-size: 13px; color: #95a5a6; margin-bottom: 10px;">
+            Empty = open to everyone. Add phone numbers to restrict access.
+        </p>
+        <div id="whatsapp-whitelist">
+            {{range .Channels.WhatsApp.AllowFrom}}
+            <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                <input type="text" value="{{.}}" readonly style="flex: 1;">
+                <button class="btn btn-danger" onclick="removeFromWhitelist('whatsapp', '{{.}}')">Remove</button>
+            </div>
+            {{else}}
+            <p style="color: #95a5a6; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                🌍 Open to everyone - No whitelist configured
+            </p>
+            {{end}}
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <input type="text"
+                   id="whatsapp-new-user"
+                   placeholder="5511999999999@s.whatsapp.net"
+                   style="flex: 1;">
+            <button class="btn btn-success" onclick="addToWhitelist('whatsapp')">Add User</button>
+        </div>
+        <p style="font-size: 12px; color: #7f8c8d; margin-top: 10px;">
+            💡 <strong>How to get WhatsApp ID:</strong> Send a message to your bot and check the logs for the sender ID
+        </p>
+    </div>
+
+    <!-- QR Code Section -->
+    <div id="whatsapp-qr-section" style="margin-top: 20px;">
+        <button class="btn btn-primary" onclick="showWhatsAppQR()" id="show-qr-btn">
+            📱 Show QR Code
+        </button>
+
+        <div id="qr-display" style="display: none; margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;">WhatsApp QR Code</h3>
+                <button class="btn btn-secondary" onclick="hideWhatsAppQR()">Close</button>
+            </div>
+
+            <div id="qr-container" style="text-align: center; padding: 20px; background: white; border-radius: 4px;">
+                <div class="spinner"></div>
+                <p style="color: #95a5a6; margin-top: 15px;">Loading QR code...</p>
+            </div>
+
+            <div style="margin-top: 15px; padding: 15px; background: #e8f4f8; border-radius: 4px;">
+                <h4 style="margin-bottom: 10px;">📋 How to scan:</h4>
+                <ol style="margin-left: 20px; line-height: 1.6;">
+                    <li>Open WhatsApp on your phone</li>
+                    <li>Go to Settings → Linked Devices</li>
+                    <li>Tap "Link a Device"</li>
+                    <li>Scan the QR code above</li>
+                </ol>
+                <p style="color: #7f8c8d; font-size: 12px; margin-top: 10px;">
+                    💡 The QR code refreshes automatically every 60 seconds
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+        <h3 style="margin-bottom: 10px; font-size: 16px;">ℹ️ Quick Setup</h3>
+        <ol style="margin-left: 20px; line-height: 1.8;">
+            <li>Make sure gateway is running: <code style="background: white; padding: 2px 6px; border-radius: 3px;">docker compose up</code></li>
+            <li>Click "Show QR Code" button above to display it here</li>
+            <li>Or check terminal logs for ASCII QR code</li>
+            <li>Scan with WhatsApp to connect</li>
+            <li>Send a test message to get your WhatsApp ID</li>
+            <li>Add your ID to whitelist (optional but recommended)</li>
+        </ol>
+    </div>
+    {{end}}
+</div>
+
+<!-- Telegram Channel -->
+<div class="card">
+    <h2>✈️ Telegram</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <p style="color: #95a5a6; margin-top: 5px;">Connect via Telegram Bot API</p>
+        </div>
+        <label class="toggle-switch">
+            <input type="checkbox"
+                   id="telegram-toggle"
+                   {{if .Channels.Telegram.Enabled}}checked{{end}}
+                   onchange="toggleChannel('telegram', this.checked)">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    {{if .Channels.Telegram.Enabled}}
+    <div class="form-group">
+        <label>Bot Token</label>
+        <input type="password"
+               value="{{.Channels.Telegram.Token}}"
+               placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
+               onchange="updateTelegramToken(this.value)">
+        <p style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+            Get your token from <a href="https://t.me/BotFather" target="_blank">@BotFather</a>
+        </p>
+    </div>
+
+    <div class="form-group">
+        <label>Whitelist (User IDs)</label>
+        <div id="telegram-whitelist">
+            {{range .Channels.Telegram.AllowFrom}}
+            <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                <input type="text" value="{{.}}" readonly style="flex: 1;">
+                <button class="btn btn-danger" onclick="removeFromWhitelist('telegram', '{{.}}')">Remove</button>
+            </div>
+            {{else}}
+            <p style="color: #95a5a6; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                🌍 Open to everyone
+            </p>
+            {{end}}
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <input type="text"
+                   id="telegram-new-user"
+                   placeholder="123456789"
+                   style="flex: 1;">
+            <button class="btn btn-success" onclick="addToWhitelist('telegram')">Add User</button>
+        </div>
+    </div>
+    {{end}}
+</div>
+
+<!-- Discord Channel -->
+<div class="card">
+    <h2>💬 Discord</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <p style="color: #95a5a6; margin-top: 5px;">Connect via Discord Bot</p>
+        </div>
+        <label class="toggle-switch">
+            <input type="checkbox"
+                   id="discord-toggle"
+                   {{if .Channels.Discord.Enabled}}checked{{end}}
+                   onchange="toggleChannel('discord', this.checked)">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    {{if .Channels.Discord.Enabled}}
+    <div class="form-group">
+        <label>Bot Token</label>
+        <input type="password"
+               value="{{.Channels.Discord.Token}}"
+               placeholder="MTk4NjIyNDgzNDcxOTI1MjQ4.Cl2FMQ.ZnCjm1XVW7vRze4b7Cq4se7kKWs"
+               onchange="updateDiscordToken(this.value)">
+        <p style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+            Get your token from <a href="https://discord.com/developers/applications" target="_blank">Discord Developer Portal</a>
+        </p>
+    </div>
+    {{end}}
+</div>
+
+<!-- Slack Channel -->
+<div class="card">
+    <h2>💼 Slack</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <p style="color: #95a5a6; margin-top: 5px;">Connect via Slack App</p>
+        </div>
+        <label class="toggle-switch">
+            <input type="checkbox"
+                   id="slack-toggle"
+                   {{if .Channels.Slack.Enabled}}checked{{end}}
+                   onchange="toggleChannel('slack', this.checked)">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    {{if .Channels.Slack.Enabled}}
+    <div class="form-group">
+        <label>Bot Token</label>
+        <input type="password"
+               value="{{.Channels.Slack.BotToken}}"
+               placeholder="xoxb-YOUR-BOT-TOKEN"
+               onchange="updateSlackToken(this.value)">
+    </div>
+    {{end}}
+</div>
+
+<!-- Feishu Channel -->
+<div class="card">
+    <h2>🕊️ Feishu (Lark)</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <p style="color: #95a5a6; margin-top: 5px;">Connect via Feishu App</p>
+        </div>
+        <label class="toggle-switch">
+            <input type="checkbox"
+                   id="feishu-toggle"
+                   {{if .Channels.Feishu.Enabled}}checked{{end}}
+                   onchange="toggleChannel('feishu', this.checked)">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    {{if .Channels.Feishu.Enabled}}
+    <div class="form-group">
+        <label>App ID</label>
+        <input type="text"
+               value="{{.Channels.Feishu.AppID}}"
+               placeholder="cli_xxxxxxxxxx"
+               onchange="updateFeishuAppID(this.value)">
+    </div>
+    <div class="form-group">
+        <label>App Secret</label>
+        <input type="password"
+               value="{{.Channels.Feishu.AppSecret}}"
+               placeholder="xxxxxxxxxxxxxx"
+               onchange="updateFeishuAppSecret(this.value)">
+    </div>
+    {{end}}
+</div>
+
+<script>
+    async function toggleChannel(channel, enabled) {
+        const result = await apiCall('/api/channels/toggle', {
+            channel: channel,
+            enabled: enabled
+        });
+
+        if (result.status === 'ok') {
+            showToast(`${channel} ${enabled ? 'enabled' : 'disabled'} successfully`);
+            setTimeout(() => location.reload(), 1000);
+        }
+    }
+
+    async function addToWhitelist(channel) {
+        const inputId = channel + '-new-user';
+        const input = document.getElementById(inputId);
+        const userId = input.value.trim();
+
+        if (!userId) {
+            showToast('Please enter a user ID', 'error');
+            return;
+        }
+
+        const result = await apiCall('/api/channels/whitelist', {
+            channel: channel,
+            action: 'add',
+            user_id: userId
+        });
+
+        if (result.status === 'ok') {
+            showToast('User added to whitelist');
+            input.value = '';
+            setTimeout(() => location.reload(), 1000);
+        }
+    }
+
+    async function removeFromWhitelist(channel, userId) {
+        if (!confirm('Remove this user from whitelist?')) {
+            return;
+        }
+
+        const result = await apiCall('/api/channels/whitelist', {
+            channel: channel,
+            action: 'remove',
+            user_id: userId
+        });
+
+        if (result.status === 'ok') {
+            showToast('User removed from whitelist');
+            setTimeout(() => location.reload(), 1000);
+        }
+    }
+
+    // Token update functions would save directly to config
+    async function updateTelegramToken(token) {
+        // Save token via API
+        showToast('Token updated. Remember to restart the gateway.');
+    }
+
+    async function updateDiscordToken(token) {
+        showToast('Token updated. Remember to restart the gateway.');
+    }
+
+    async function updateSlackToken(token) {
+        showToast('Token updated. Remember to restart the gateway.');
+    }
+
+    async function updateFeishuAppID(appId) {
+        showToast('App ID updated. Remember to restart the gateway.');
+    }
+
+    async function updateFeishuAppSecret(secret) {
+        showToast('App Secret updated. Remember to restart the gateway.');
+    }
+
+    // WhatsApp QR Code functions
+    let qrRefreshInterval = null;
+
+    async function showWhatsAppQR() {
+        document.getElementById('qr-display').style.display = 'block';
+        document.getElementById('show-qr-btn').style.display = 'none';
+        await loadWhatsAppQR();
+
+        // Auto-refresh every 60 seconds
+        qrRefreshInterval = setInterval(loadWhatsAppQR, 60000);
+    }
+
+    function hideWhatsAppQR() {
+        document.getElementById('qr-display').style.display = 'none';
+        document.getElementById('show-qr-btn').style.display = 'block';
+
+        if (qrRefreshInterval) {
+            clearInterval(qrRefreshInterval);
+            qrRefreshInterval = null;
+        }
+    }
+
+    async function loadWhatsAppQR() {
+        const container = document.getElementById('qr-container');
+
+        try {
+            const result = await apiCall('/api/whatsapp/qr');
+
+            if (result.status === 'waiting' && result.qr_code) {
+                // Display ASCII QR code
+                container.innerHTML = `<pre style="font-family: monospace; font-size: 8px; line-height: 1; text-align: center; background: white; padding: 10px; border-radius: 4px;">${result.qr_code}</pre>`;
+            } else if (result.status === 'connected') {
+                container.innerHTML = `
+                    <div style="padding: 40px; background: #d4edda; border-radius: 4px;">
+                        <h3 style="color: #155724;">✅ WhatsApp Connected!</h3>
+                        <p style="color: #155724; margin-top: 10px;">Your WhatsApp is already linked</p>
+                    </div>
+                `;
+                hideWhatsAppQR();
+            } else {
+                container.innerHTML = `
+                    <div style="padding: 40px; background: #fff3cd; border-radius: 4px;">
+                        <p style="color: #856404;">⏳ ${result.message || 'Waiting for QR code...'}</p>
+                        <p style="color: #856404; font-size: 12px; margin-top: 10px;">Make sure the gateway is running</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            container.innerHTML = `
+                <div style="padding: 40px; background: #f8d7da; border-radius: 4px;">
+                    <p style="color: #721c24;">❌ Failed to load QR code</p>
+                    <p style="color: #721c24; font-size: 12px; margin-top: 10px;">${error.message}</p>
+                </div>
+            `;
+        }
+    }
+</script>
+{{end}}

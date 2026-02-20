@@ -1,0 +1,206 @@
+{{template "layout" .}}
+
+{{define "content"}}
+<div class="header">
+    <h1>📱 WhatsApp QR Code</h1>
+    <div class="status">
+        <span class="status-dot" id="qr-status"></span>
+        <span id="qr-status-text">Checking...</span>
+    </div>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h2>Connect WhatsApp</h2>
+
+    <div id="qr-container" style="text-align: center; padding: 30px;">
+        <div class="spinner"></div>
+        <p style="color: #95a5a6; margin-top: 20px;">Loading QR code...</p>
+    </div>
+
+    <div id="qr-instructions" style="background: #e8f4f8; padding: 20px; border-radius: 4px; margin-top: 20px;">
+        <h3>📋 How to connect:</h3>
+        <ol style="margin: 15px 0; padding-left: 25px;">
+            <li>Open WhatsApp on your phone</li>
+            <li>Go to <strong>Settings</strong> → <strong>Linked Devices</strong></li>
+            <li>Tap <strong>Link a Device</strong></li>
+            <li>Scan the QR code shown above</li>
+        </ol>
+        <p style="color: #7f8c8d; font-size: 13px; margin-top: 15px;">
+            💡 The QR code refreshes automatically every 60 seconds
+        </p>
+    </div>
+
+    <div id="connection-success" style="display: none; background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 20px; border-radius: 4px; margin-top: 20px; text-align: center;">
+        <h3>✅ Successfully Connected!</h3>
+        <p style="margin-top: 10px;">Your WhatsApp is now linked to PicoClaw</p>
+        <button class="btn btn-primary" onclick="window.location.href='/channels'" style="margin-top: 15px;">
+            Go to Channels
+        </button>
+    </div>
+
+    <div id="connection-error" style="display: none; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 20px; border-radius: 4px; margin-top: 20px;">
+        <h3>⚠️ Connection Error</h3>
+        <p id="error-message" style="margin-top: 10px;"></p>
+        <button class="btn btn-primary" onclick="refreshQR()" style="margin-top: 15px;">
+            Retry
+        </button>
+    </div>
+</div>
+
+<style>
+    #qr-container canvas,
+    #qr-container img {
+        max-width: 100%;
+        height: auto;
+        border: 2px solid #ecf0f1;
+        border-radius: 8px;
+        padding: 20px;
+        background: white;
+    }
+</style>
+
+<script>
+    let qrPollInterval = null;
+    let qrRefreshTimeout = null;
+
+    // API helper function (in case not loaded from layout)
+    async function apiCall(endpoint, data = null) {
+        const options = {
+            method: data ? 'POST' : 'GET',
+            headers: {'Content-Type': 'application/json'}
+        };
+        if (data) options.body = JSON.stringify(data);
+
+        try {
+            const response = await fetch(endpoint, options);
+            const result = await response.json();
+            return result;
+        } catch (error) {
+            console.error('API Error:', error);
+            throw error;
+        }
+    }
+
+    async function loadQRCode() {
+        try {
+            const result = await apiCall('/api/whatsapp/qr');
+
+            if (result.status === 'connected') {
+                showConnected();
+                return;
+            }
+
+            if (result.status === 'pending' || result.status === 'waiting') {
+                document.getElementById('qr-status').style.background = '#f39c12';
+                document.getElementById('qr-status-text').textContent = 'Waiting for QR code';
+
+                if (result.qr_code) {
+                    displayQRCode(result.qr_code);
+                    document.getElementById('qr-status').style.background = '#3498db';
+                    document.getElementById('qr-status-text').textContent = 'Scan QR code';
+                } else {
+                    // Gateway might not have generated QR yet, show instructions to enable WhatsApp
+                    showEnableInstructions();
+                }
+
+                // Auto-refresh QR code every 60 seconds
+                if (qrRefreshTimeout) clearTimeout(qrRefreshTimeout);
+                qrRefreshTimeout = setTimeout(loadQRCode, 60000);
+            } else if (result.status === 'error') {
+                showError(result.message || 'Failed to load QR code');
+            }
+        } catch (error) {
+            console.error('Failed to load QR code:', error);
+            showError('Failed to connect to server. Make sure the gateway is running.');
+        }
+    }
+
+    function displayQRCode(qrCode) {
+        const container = document.getElementById('qr-container');
+
+        if (qrCode.startsWith('data:image')) {
+            // Image data URL
+            container.innerHTML = `<img src="${qrCode}" alt="WhatsApp QR Code">`;
+        } else if (qrCode.startsWith('http')) {
+            // URL to QR code image
+            container.innerHTML = `<img src="${qrCode}" alt="WhatsApp QR Code">`;
+        } else {
+            // Plain text QR code (ASCII art or raw string)
+            container.innerHTML = `<pre style="font-family: monospace; font-size: 10px; line-height: 1; text-align: center;">${escapeHtml(qrCode)}</pre>`;
+        }
+    }
+
+    function showEnableInstructions() {
+        const container = document.getElementById('qr-container');
+        container.innerHTML = `
+            <div style="padding: 20px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;">
+                <h3>📱 Enable WhatsApp Channel</h3>
+                <p style="margin: 15px 0;">WhatsApp is not enabled yet. Follow these steps:</p>
+                <ol style="text-align: left; margin-left: 20px;">
+                    <li>Go to <a href="/channels">Channels page</a></li>
+                    <li>Enable WhatsApp channel</li>
+                    <li>Restart the gateway: <code>docker compose restart picoclaw-gateway</code></li>
+                    <li>Come back to this page</li>
+                </ol>
+                <button class="btn btn-primary" onclick="window.location.href='/channels'" style="margin-top: 15px;">
+                    Go to Channels
+                </button>
+            </div>
+        `;
+        document.getElementById('qr-status').style.background = '#f39c12';
+        document.getElementById('qr-status-text').textContent = 'Not enabled';
+    }
+
+    function showConnected() {
+        document.getElementById('qr-container').style.display = 'none';
+        document.getElementById('qr-instructions').style.display = 'none';
+        document.getElementById('connection-success').style.display = 'block';
+        document.getElementById('qr-status').style.background = '#27ae60';
+        document.getElementById('qr-status-text').textContent = 'Connected';
+
+        // Stop polling
+        if (qrPollInterval) {
+            clearInterval(qrPollInterval);
+            qrPollInterval = null;
+        }
+        if (qrRefreshTimeout) {
+            clearTimeout(qrRefreshTimeout);
+            qrRefreshTimeout = null;
+        }
+    }
+
+    function showError(message) {
+        document.getElementById('qr-container').style.display = 'none';
+        document.getElementById('qr-instructions').style.display = 'none';
+        document.getElementById('error-message').textContent = message;
+        document.getElementById('connection-error').style.display = 'block';
+        document.getElementById('qr-status').style.background = '#e74c3c';
+        document.getElementById('qr-status-text').textContent = 'Error';
+    }
+
+    function refreshQR() {
+        document.getElementById('connection-error').style.display = 'none';
+        document.getElementById('qr-container').style.display = 'block';
+        document.getElementById('qr-instructions').style.display = 'block';
+        loadQRCode();
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Start loading QR code
+    loadQRCode();
+
+    // Poll for connection status every 5 seconds
+    qrPollInterval = setInterval(loadQRCode, 5000);
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        if (qrPollInterval) clearInterval(qrPollInterval);
+        if (qrRefreshTimeout) clearTimeout(qrRefreshTimeout);
+    });
+</script>
+{{end}}

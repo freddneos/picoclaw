@@ -31,7 +31,6 @@
     },
     "whatsapp": {
       "enabled": false,
-      "bridge_url": "ws://localhost:3001",
       "allow_from": []
     },
     "feishu": {

@@ -38,6 +38,7 @@ import (
 	"github.com/sipeed/picoclaw/pkg/state"
 	"github.com/sipeed/picoclaw/pkg/tools"
 	"github.com/sipeed/picoclaw/pkg/voice"
+	"github.com/sipeed/picoclaw/pkg/webui"
 )
 
 //go:generate cp -r ../../workspace .
@@ -134,6 +135,8 @@ func main() {
 		agentCmd()
 	case "gateway":
 		gatewayCmd()
+	case "webui":
+		webuiCmd()
 	case "status":
 		statusCmd()
 	case "migrate":
@@ -209,6 +212,7 @@ func printHelp() {
 	fmt.Println("  agent       Interact with the agent directly")
 	fmt.Println("  auth        Manage authentication (login, logout, status)")
 	fmt.Println("  gateway     Start picoclaw gateway")
+	fmt.Println("  webui       Start web-based configuration UI")
 	fmt.Println("  status      Show picoclaw status")
 	fmt.Println("  cron        Manage scheduled tasks")
 	fmt.Println("  migrate     Migrate from OpenClaw to PicoClaw")
@@ -1430,4 +1434,76 @@ func skillsShowCmd(loader *skills.SkillsLoader, skillName string) {
 	fmt.Printf("\n📦 Skill: %s\n", skillName)
 	fmt.Println("----------------------")
 	fmt.Println(content)
+}
+
+func webuiCmd() {
+	// Parse command line options
+	host := "0.0.0.0"
+	port := 8080
+
+	args := os.Args[2:]
+	for i := 0; i < len(args); i++ {
+		switch args[i] {
+		case "--host":
+			if i+1 < len(args) {
+				host = args[i+1]
+				i++
+			}
+		case "--port", "-p":
+			if i+1 < len(args) {
+				fmt.Sscanf(args[i+1], "%d", &port)
+				i++
+			}
+		case "--help", "-h":
+			webuiHelp()
+			return
+		}
+	}
+
+	cfg, err := loadConfig()
+	if err != nil {
+		fmt.Printf("Error loading config: %v\n", err)
+		os.Exit(1)
+	}
+
+	configPath := getConfigPath()
+	server := webui.NewServer(cfg, configPath, host, port)
+
+	fmt.Printf("🌐 PicoClaw Web UI starting...\n")
+	fmt.Printf("📍 Open your browser: http://localhost:%d\n", port)
+	fmt.Printf("Press Ctrl+C to stop\n\n")
+
+	// Handle graceful shutdown
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt)
+
+	go func() {
+		<-sigChan
+		fmt.Println("\nShutting down web UI...")
+		server.Stop(ctx)
+		os.Exit(0)
+	}()
+
+	if err := server.Start(); err != nil && err != http.ErrServerClosed {
+		fmt.Printf("Error starting web UI: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func webuiHelp() {
+	fmt.Println("\nStart PicoClaw Web Configuration UI")
+	fmt.Println()
+	fmt.Println("Usage: picoclaw webui [options]")
+	fmt.Println()
+	fmt.Println("Options:")
+	fmt.Println("  --host <host>    Host to bind to (default: 0.0.0.0)")
+	fmt.Println("  --port, -p <port> Port to listen on (default: 8080)")
+	fmt.Println()
+	fmt.Println("Examples:")
+	fmt.Println("  picoclaw webui")
+	fmt.Println("  picoclaw webui --port 3000")
+	fmt.Println("  picoclaw webui --host 127.0.0.1 --port 8080")
 }
